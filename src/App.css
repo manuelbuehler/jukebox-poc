@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -16,6 +18,42 @@
 }
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.btn.dropdown-toggle  {
+    width:150px;
+    text-align:left;
+}
+
+span.caret {
+    position: absolute;
+    left: 90%;
+    top: 45%;
+}
+
+label {
+    padding-top:5px;
+}
+
+.form-label {
+    padding-left:0px !important;
+}
+
+img {
+    width:140px;
+    height:140px;
+}
+
+.btn-success {
+    background-color: #3b7d4a!important;
+}
+
+.btn-success:hover {
+    background-color: #4daf64!important;
+}
+
+img.track {
+    border: 1px solid #8a8a8a;
 }
 
 @keyframes logo-spin {
