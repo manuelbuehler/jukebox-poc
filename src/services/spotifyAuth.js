@@ -1,75 +1,61 @@
-// api/spotifyAuth.js
+// services/spotifyAuth.js
 const clientId = "ba42e441ded44d0d81d99ebcee70accd";
-const redirectUri = "http://127.0.0.1:5173"; // anpassen
+const redirectUri = "http://127.0.0.1:5173";
 
-// Hilfsfunktionen
-const base64urlencode = (str) => {
-  return btoa(String.fromCharCode.apply(null, new Uint8Array(str)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+const generateRandomString = (length) => {
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+  return Array.from({ length }, () => possible.charAt(Math.floor(Math.random() * possible.length))).join('');
 };
 
 const sha256 = async (plain) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(plain);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return hash;
+  return crypto.subtle.digest("SHA-256", data);
 };
 
-export const generatePKCECodes = async () => {
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-  let codeVerifier = "";
-  for (let i = 0; i < 128; i++) {
-    codeVerifier += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode(codeVerifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-
-  const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+const base64urlencode = (buffer) => {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
+};
 
+const generatePKCECodes = async () => {
+  const codeVerifier = generateRandomString(128);
+  const hashed = await sha256(codeVerifier);
+  const codeChallenge = base64urlencode(hashed);
   return { codeVerifier, codeChallenge };
 };
 
-// Redirect zu Spotify Login
-export const redirectToSpotifyAuth = async (
-  scope = "user-read-private user-read-email user-modify-playback-state"
-) => {
+export const redirectToSpotifyAuth = async (scope = "user-read-private user-read-email user-modify-playback-state") => {
   const { codeVerifier, codeChallenge } = await generatePKCECodes();
-  window.localStorage.setItem("code_verifier", codeVerifier);
+  localStorage.setItem("spotify_code_verifier", codeVerifier);
 
-  const authUrl = new URL("https://accounts.spotify.com/authorize");
-  authUrl.search = new URLSearchParams({
-    response_type: "code",
+  const params = new URLSearchParams({
     client_id: clientId,
-    scope,
+    response_type: "code",
     redirect_uri: redirectUri,
     code_challenge_method: "S256",
     code_challenge: codeChallenge,
-  }).toString();
+    scope,
+  });
 
-  window.location.href = authUrl.toString();
+  window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
 };
 
-// Token nach Redirect holen
 export const getAccessTokenFromCode = async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code");
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
   if (!code) return null;
 
-  const codeVerifier = window.localStorage.getItem("code_verifier");
+  const codeVerifier = localStorage.getItem("spotify_code_verifier");
   if (!codeVerifier) return null;
 
   const body = new URLSearchParams({
+    client_id: clientId,
     grant_type: "authorization_code",
     code,
     redirect_uri: redirectUri,
-    client_id: clientId,
     code_verifier: codeVerifier,
   });
 
@@ -80,9 +66,6 @@ export const getAccessTokenFromCode = async () => {
   });
 
   const data = await response.json();
-  if (data.access_token) {
-    window.localStorage.setItem("spotify_access_token", data.access_token);
-  }
-
+  if (data.access_token) localStorage.setItem("spotify_access_token", data.access_token);
   return data.access_token;
 };

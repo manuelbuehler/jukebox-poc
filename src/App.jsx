@@ -3,6 +3,7 @@ import spotifyService from "./services/spotifyService";
 import { getAccessTokenFromCode } from "./services/spotifyAuth";
 import { UIController } from "./components/uiController";
 import jukeboxLogo from "/logo.png";
+import { Play, Clock, Heart } from "lucide-react";
 
 // ---------------------------------------------------------------------
 // APP Controller mapped to React component
@@ -31,13 +32,21 @@ export default function App() {
     const token = await spotifyService.getUserToken();
 
     if (!token) {
-      // Benutzer wurde umgeleitet, wir können hier nichts weiter machen
       return;
     }
 
     await spotifyService.postTrackToQueue(token, track.uri);
     alert(`Du hast "${track.name}" von ${track.artists[0].name} gewünscht!`);
   };
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const current = await spotifyService.getCurrentlyPlaying();
+      setCurrentlyPlaying(current);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const DOMInputs = UIController.inputField(refs);
@@ -57,16 +66,8 @@ export default function App() {
       genres.forEach((g) => UIController.createGenre(refs, g.name, g.id));
     };
 
-    // const loadCurrentlyPlaying = async () => {
-    //   const token = await spotifyService.getUserToken();
-    //   const track = await spotifyService.getCurrentlyPlayingTrack(token);
-    //   setCurrentlyPlaying(track);
-    // };
-
     fetchToken();
     loadGenres();
-
-    // loadCurrentlyPlaying();
 
     // genre change event
     DOMInputs.genre.addEventListener("change", async () => {
@@ -172,13 +173,16 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-          <p className="mb-8">Läuft gerade</p>
+          <div className="flex flex-row gap-2 items-center mb-4">
+            <Play className="h-4 w-4" />
+            <h4>Läuft gerade</h4>
+          </div>
           {currentlyPlaying ? (
-            <div className="d-flex align-items-center">
+            <div className="flex flex-row align-items-center">
               <img
                 src={currentlyPlaying.album.images[2].url}
                 alt={currentlyPlaying.name}
-                className="me-3"
+                className="me-3 rounded-sm"
               />
               <div>
                 <div className="font-bold text-lg">{currentlyPlaying.name}</div>
@@ -193,7 +197,10 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-          <p className="mb-8">Als nächstes (3)</p>
+          <div className="flex flex-row gap-2 items-center mb-4">
+            <Clock className="h-4 w-4" />
+            <h4>Als nächstes (3)</h4>
+          </div>
         </div>
 
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
@@ -205,7 +212,10 @@ export default function App() {
               className="col-sm-6"
             ></div>
           </div>
-          <p className="mb-8">Song wünschen</p>
+          <div className="flex flex-row gap-2 items-center mb-4">
+            <Heart className="h-4 w-4" />
+            <h4>Song wünschen</h4>
+          </div>
           <div className="flex flex-col space-y-4 mb-4">
             <div className="col-sm-5">
               <input
@@ -254,10 +264,11 @@ export default function App() {
                       <div>
                         <span className="me-2">CHF 2.50</span>
                         <button
-                          className="btn btn-dark btn-sm"
+                          className="flex flex-row gap-2 items-center btn btn-dark btn-sm"
                           onClick={() => handleWish(track)}
                         >
-                          Wünschen ❤️
+                          <Heart className="h-4 w-4 me-1" />
+                          Wünschen
                         </button>
                       </div>
                     </div>

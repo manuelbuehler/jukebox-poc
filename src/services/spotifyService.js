@@ -20,12 +20,15 @@ const getToken = async () => {
 };
 
 const getUserToken = async () => {
-  let token = window.localStorage.getItem("spotify_access_token");
+  let token = localStorage.getItem("spotify_access_token");
+
   if (!token) {
-    // Wenn noch kein Token existiert, redirect
-    await redirectToSpotifyAuth("user-read-private user-read-email user-modify-playback-state");
-    return null; // Browser wird weitergeleitet
+    await redirectToSpotifyAuth(
+      "user-read-private user-read-email user-modify-playback-state user-read-playback-state user-read-currently-playing"
+    );
+    return null;
   }
+
   return token;
 };
 
@@ -59,27 +62,13 @@ const getTrack = async (token, endpoint) => {
   return await result.json();
 };
 
-// const getCurrentlyPlayingTrack = async (token) => {
-//   const url = `https://api.spotify.com/v1/me/player/currently-playing`;
-
-//   const result = await fetch(url, {
-//     headers: { Authorization: "Bearer " + token },
-//   });
-
-//   if (result.status === 204) {
-//     return null; // Nichts wird gerade abgespielt
-//   }
-//   const data = await result.json();
-//   return data.item; // Aktuell abgespielter Track
-// }
-
 const searchTracks = async (token, song = "", artist = "") => {
   let query = "";
 
   if (song) query += `track:${song}`;
   if (artist) query += song ? ` artist:${artist}` : `artist:${artist}`;
 
-  if (!query) return []; // falls nichts eingegeben
+  if (!query) return [];
 
   const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
     query
@@ -90,7 +79,7 @@ const searchTracks = async (token, song = "", artist = "") => {
   });
 
   const data = await result.json();
-  return data.tracks.items; // Array von Tracks
+  return data.tracks.items;
 };
 
 const postTrackToQueue = async (token, trackUri) => {
@@ -112,6 +101,34 @@ const postTrackToQueue = async (token, trackUri) => {
   console.log(`Track ${trackUri} erfolgreich zur Queue hinzugefügt!`);
 };
 
+const getCurrentlyPlaying = async () => {
+  let token = localStorage.getItem("spotify_access_token");
+  if (!token) {
+    token = await getUserToken();
+    if (!token) return null;
+  }
+
+  const url = "https://api.spotify.com/v1/me/player/currently-playing";
+
+  const result = await fetch(url, {
+    headers: { Authorization: "Bearer " + token },
+  });
+
+  if (result.status === 401) {
+    await redirectToSpotifyAuth(
+      "user-read-private user-read-email user-modify-playback-state user-read-playback-state user-read-currently-playing"
+    );
+    return null;
+  }
+
+  if (result.status === 204) return null;
+  if (!result.ok) return null;
+
+  const data = await result.json();
+  console.debug("Derzeit spielender Track:", data.item);
+  return data.item;
+};
+
 export default {
   getToken,
   getUserToken,
@@ -121,4 +138,5 @@ export default {
   getTrack,
   searchTracks,
   postTrackToQueue,
+  getCurrentlyPlaying,
 };
