@@ -3,6 +3,7 @@ import spotifyService from "./services/spotifyService";
 import { getAccessTokenFromCode } from "./services/spotifyAuth";
 import { UIController } from "./components/uiController";
 import jukeboxLogo from "/logo.png";
+import SectionHeader from "./components/SectionHeader";
 import { Play, Clock, Heart } from "lucide-react";
 
 // ---------------------------------------------------------------------
@@ -176,10 +177,7 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-row gap-2 items-center mb-4">
-            <Play className="h-4 w-4" />
-            <h4>Läuft gerade</h4>
-          </div>
+          <SectionHeader icon={Play} title="Läuft gerade" />
           {currentlyPlaying ? (
             <div className="flex flex-row align-items-center">
               <img
@@ -200,29 +198,19 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-          <div className="flex flex-row gap-2 items-center mb-4">
-            <Clock className="h-4 w-4" />
-            <h4>Als nächstes (3)</h4>
-          </div>
+          <SectionHeader icon={Clock} title="Als nächstes (3)" />
           <div className="flex flex-col space-y-4">
             {queue &&
               queue.slice(0, 3).map((item) => (
-                <div
-                  key={item.name}
-                  className="flex  align-items-center"
-                >
+                <div key={item.name} className="flex  align-items-center">
                   <img
                     src={item.album.images[2].url}
                     alt={item.name}
                     className="me-3 rounded-sm"
                   />
                   <div>
-                    <div className="font-bold text-lg">
-                      {item.name}
-                    </div>
-                    <div className=" text-gray-400">
-                      {item.artists[0].name}
-                    </div>
+                    <div className="font-bold text-lg">{item.name}</div>
+                    <div className=" text-gray-400">{item.artists[0].name}</div>
                   </div>
                 </div>
               ))}
@@ -238,10 +226,7 @@ export default function App() {
               className="col-sm-6"
             ></div>
           </div>
-          <div className="flex flex-row gap-2 items-center mb-4">
-            <Heart className="h-4 w-4" />
-            <h4>Song wünschen</h4>
-          </div>
+          <SectionHeader icon={Heart} title="Song wünschen" />
           <div className="flex flex-col space-y-4 mb-4">
             <div className="col-sm-5">
               <input
