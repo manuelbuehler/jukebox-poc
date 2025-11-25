@@ -25,6 +25,7 @@ export default function App() {
 
   const [searchResults, setSearchResults] = useState([]);
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [queue, setQueue] = useState([]);
 
   const handleWish = async (track) => {
     console.log("Gewünschter Song:", track);
@@ -39,10 +40,12 @@ export default function App() {
     alert(`Du hast "${track.name}" von ${track.artists[0].name} gewünscht!`);
   };
 
+  // fetch queue every second
   useEffect(() => {
     const interval = setInterval(async () => {
-      const current = await spotifyService.getCurrentlyPlaying();
-      setCurrentlyPlaying(current);
+      const response = await spotifyService.getQueue();
+      setCurrentlyPlaying(response.currently_playing);
+      setQueue(response.queue);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -200,6 +203,29 @@ export default function App() {
           <div className="flex flex-row gap-2 items-center mb-4">
             <Clock className="h-4 w-4" />
             <h4>Als nächstes (3)</h4>
+          </div>
+          <div className="flex flex-col space-y-4">
+            {queue &&
+              queue.slice(0, 3).map((item) => (
+                <div
+                  key={item.name}
+                  className="flex  align-items-center"
+                >
+                  <img
+                    src={item.album.images[2].url}
+                    alt={item.name}
+                    className="me-3 rounded-sm"
+                  />
+                  <div>
+                    <div className="font-bold text-lg">
+                      {item.name}
+                    </div>
+                    <div className=" text-gray-400">
+                      {item.artists[0].name}
+                    </div>
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
 

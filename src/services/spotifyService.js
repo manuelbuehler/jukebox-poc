@@ -101,14 +101,13 @@ const postTrackToQueue = async (token, trackUri) => {
   console.log(`Track ${trackUri} erfolgreich zur Queue hinzugefügt!`);
 };
 
-const getCurrentlyPlaying = async () => {
+const getQueue = async () => {
   let token = localStorage.getItem("spotify_access_token");
   if (!token) {
     token = await getUserToken();
     if (!token) return null;
   }
-
-  const url = "https://api.spotify.com/v1/me/player/currently-playing";
+  const url = "https://api.spotify.com/v1/me/player/queue";
 
   const result = await fetch(url, {
     headers: { Authorization: "Bearer " + token },
@@ -123,10 +122,9 @@ const getCurrentlyPlaying = async () => {
 
   if (result.status === 204) return null;
   if (!result.ok) return null;
-
+  
   const data = await result.json();
-  console.debug("Derzeit spielender Track:", data.item);
-  return data.item;
+  return data;
 };
 
 export default {
@@ -138,5 +136,5 @@ export default {
   getTrack,
   searchTracks,
   postTrackToQueue,
-  getCurrentlyPlaying,
+  getQueue
 };
