@@ -183,7 +183,7 @@ export default function App() {
               <img
                 src={currentlyPlaying.album.images[2].url}
                 alt={currentlyPlaying.name}
-                className="me-3 rounded-sm"
+                className="w-16 h-16 me-3 rounded-sm"
               />
               <div>
                 <div className="font-bold text-lg">{currentlyPlaying.name}</div>
@@ -206,7 +206,7 @@ export default function App() {
                   <img
                     src={item.album.images[2].url}
                     alt={item.name}
-                    className="me-3 rounded-sm"
+                    className="w-16 h-16 me-3 rounded-sm"
                   />
                   <div>
                     <div className="font-bold text-lg">{item.name}</div>
