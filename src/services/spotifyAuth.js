@@ -1,6 +1,6 @@
 // services/spotifyAuth.js
-const clientId = "ba42e441ded44d0d81d99ebcee70accd";
-const redirectUri = "http://127.0.0.1:5173";
+const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+const redirectUri = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
 
 const generateRandomString = (length) => {
   const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";

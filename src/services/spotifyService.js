@@ -1,8 +1,8 @@
-import { redirectToSpotifyAuth, getAccessTokenFromCode } from "./spotifyAuth";
+import { redirectToSpotifyAuth } from "./spotifyAuth";
 
-// api/spotifyApi.js
-const clientId = "ba42e441ded44d0d81d99ebcee70accd";
-const clientSecret = "504f5915c5c344b19704b611155f0bc9";
+// services/spotifyService.js
+const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
 const getToken = async () => {
   const result = await fetch("https://accounts.spotify.com/api/token", {
@@ -122,7 +122,7 @@ const getQueue = async () => {
 
   if (result.status === 204) return null;
   if (!result.ok) return null;
-  
+
   const data = await result.json();
   return data;
 };
